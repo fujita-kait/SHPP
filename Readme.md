@@ -1,20 +1,19 @@
 # Smart House Prototyping Platform (SHPP)
 
 ## 1. Overview
-Web APIを持ったECHONET Lite controller。Node-REDを利用。
+SHPPはWeb APIでECHONET Lite(EL)機器を制御できるようにしたECHONET Lite controller。実装はNode-REDを利用している。SHPPはUIを持たず、Web APIのみである。Reference実装としてsampleのHTMLを提供している。
 
 ## 2. Web API
 
 ### 2.1 Device List 関連
 
 - Directory: /EL/deviceList
-- Abstract:<br>　SPPがEL deviceを発見すると、device nameを作成し、IP addressとEOJ(3byte)の組み合わせを"deviceList"に登録する。device nameは機器種名の後に "\_" と1から始まる数字を付加して作成する（例えば一般照明の場合は "Lighting_1"）。機器制御はdevice nameを利用することで、ユーザーはEL deviceのIP addressやEOJを意識する必要がなくなる。機器種名は "deviceNameTable" で定義されている。<br>
-　"getDeviceNames"を実行すると、device nameを配列で取得できる。以下のサンプルを参照のこと。<br>
-　通常の操作では"clearDeviceList"や"updateDeviceList"を使う必要はない。SPPが接続するネットワークを変更した場合は"clearDeviceList"と"updateDeviceList"を実行する。
+- Abstract:<br>
+　SHPPは起動時と updateDeviceList コマンド受信時にLAN内のEL機器探索を行う。SHPPがEL deviceを発見すると、device nameを作成し、IP addressとEOJ(3byte)の組み合わせを"deviceList"に登録する。device nameは機器種名の後に "\_" と1から始まる数字を付加して作成する（例えば一般照明の場合は "Lighting_1"）。機器制御にdevice nameを利用することで、ユーザーはEL deviceのIP addressやEOJを意識する必要がなくなる。機器種名は "deviceNameTable" で定義されている。<br>
+　"getDeviceNames"を実行すると、SHPPが認識している device name のlistを取得できる。サンプルを以下に示す。<br>
 
 ```
 Sample response of "getDeviceNames"
-[
   "Controller_1",
   "Refrigerator_1",
   "Lighting_1",
@@ -22,38 +21,37 @@ Sample response of "getDeviceNames"
   "Controller_2",
   "PowerDistributionBoard_1",
   "ElectricWaterHeater_1"
-]
 ```
 
-
+　SHPPを起動した状態で別のLANに接続を変更した場合は、"clearDeviceList" と "updateDeviceList" を実行してSHPP内のリストを更新する必要がある。
 
 - Functions
 
 | function name(func=) | description | parameter | return value |
 |:------:|:------------:|:------------:|:------------:|
-| getDeviceNames | Device List内のdevice nameを全て取得する | none | [deviceName] |
+| getDeviceNames | Device List内のdevice nameを全て取得する | none | a list of deviceNames |
 | clearDeviceList | Device Listを初期化する(deviceList = {}) | none | none |
 | updateDeviceList | Device Listを更新する(send GET D6) | none | none |
 
 - Sample:
-	- /EL/deviceList?func=getDeviceNames
-	- /EL/deviceList?func=clearDeviceList
-	- /EL/deviceList?func=updateDeviceList
 
-
+	> /EL/deviceList?func=getDeviceNames<br>
+	> /EL/deviceList?func=clearDeviceList<br>
+	> /EL/deviceList?func=updateDeviceList
 
 
 ### 2.2 機器制御 関連
 
 - Directory: /EL/deviceControl
+- Abstract:<br>
+　機器制御命令には、機器の状態を取得する "get" 命令と、機器の動作状態を変更する "set" 命令がある。"get"命令を実行すると値を取得できる。"set"命令はパラメータを付加して送る。機器が"set"命令を受信すると"ACK"が返ってくる。以下の説明でEOJやEPCはECHONET Liteで規定された値である。機器制御の詳細を確認するためにはこれらの値を利用してECHONET Liteの仕様書を参照すること。
+　
 - format
-
 	> /EL/deviceControl?device=\<device\_name>&func=\<function\_name>&param=\<data>
 
 - Samples:
-	> /EL/deviceControl?device=AirConditioner_1&func=getOperatingStatus
-
-	> /EL/deviceControl?device=AirConditioner_1&func=setOperatingStatus&param=on
+	> /EL/deviceControl?device=AirConditioner\_1&func=getOperatingStatus<br>
+	> /EL/deviceControl?device=AirConditioner\_1&func=setOperatingStatus&param=on
 
 #### 2.2.1 温度センサ(DeviceName=TemperatureSensor, EOJ=0x0011)
 
@@ -302,3 +300,6 @@ function getDeviceInfo(deviceName){
 - ElectricBlind.html動作確認
 - AirCleaner.htmlはまだ動作確認をしていない
 
+2017.02.17
+- AirCleaner.html 動作確認済み
+- Refrigerator.html 動作確認済み

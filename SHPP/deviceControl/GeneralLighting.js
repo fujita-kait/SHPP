@@ -1,5 +1,6 @@
+// deviceControl/GeneralLighting.js
 // WebApi for General Lighting
-// update: 2017.01.26 15:27
+// update: 2017.02.17 16:19
 // Sample:
 // /EL/deviceControl?device=Lighting_1&func=getOperatingStatus
 // /EL/deviceControl?device=Lighting_1&func=setOperatingStatus&param=on
@@ -77,7 +78,7 @@ switch (func.toLowerCase()) {
     epc = 0xC0;
     let colorNameTable = global.get("colorNameTable");
     let dataTmp = colorNameTable[param];
-    if (dataTmp === null) {
+    if (dataTmp === undefined) {
       dataTmp = param;
     }
     edt[0] = parseInt(dataTmp.substr(0, 2), 16);
