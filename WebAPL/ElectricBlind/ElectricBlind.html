@@ -1,0 +1,307 @@
+<!-- ElectricBlind.html -->
+<!-- Hiroyuki Fujita 2017.02.15 -->
+<!-- For Node-RED -->
+<!-- device name is passed by payload.device from previous node -->
+
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"i>
+    <title>{{payload.device}}</title>
+    <style>
+    * {
+      margin: 0; padding: 0;
+    }    
+    html, body {
+        font-family: sans-serif;
+        /*width: 320px;*/
+         width: 100%; 
+    }
+    h1 {
+      font-size: 1.4rem;
+      padding: 10px 0px 0px 10px;
+    }
+    label {
+      padding: 0px 0px 0px 5px;
+    }    
+    .epc {
+        background: #ecf0f1;
+        box-shadow: 0 0 3px #aaa;
+      padding: 5px;
+    }
+    .epc h2 {
+        font-weight: normal;
+        font-size: 1.2rem;
+        padding: 5px 5px 0px 5px;
+    }
+    .radio {
+      /*padding: 5px;*/
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;  /* 左右均等分布 */
+      align-items: center;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    section {
+      display: flex;
+      justify-content: space-between;  /* 左右均等分布 */
+      align-items: center;
+    }
+    #epcE0, #epcE1, #epcE2 {
+      display: flex;
+      justify-content: space-between;  /* 左右均等分布 */
+      align-items: center;
+    }
+    .line-1st {
+        font-weight: normal;
+        font-size: 1.2rem;
+        color: red;
+        padding: 5px 5px 0px 5px;
+    }
+    .buttonHeader {
+      height: 20px;
+      margin: 10px 20px 0 0;
+    }
+    .buttonSet {
+      height: 20px;
+    }
+    #slider-valueE1, #slider-valueE2{
+      text-align: center;
+      font-size: 1.5em;
+      width: 40px; 
+      height: 10px;
+      line-height: 10px;
+      margin: 10px;
+    }
+    input[type="range"] {
+        display: block;
+        -webkit-appearance: none;
+        background-color: #bdc3c7;
+        width: 180px;
+        height: 5px;
+        outline: 0;
+        margin: 10px 0px 10px 0px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        background-color: #e74c3c;
+        width: 15px;
+        height: 30px;
+        border: 2px solid white;
+    }​
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>{{payload.device}}</h1>
+    <input type="button" class="buttonHeader" value="UPDATE" onclick="ButtonClickEpcUpdate()"/>
+</header>
+
+<main>
+    <div class="epc">
+        <section>
+            <h2>動作状態 (0x80)</h2>
+            <div id="epc80" class="line-1st"> </div>
+        </section>
+        <section>
+            <div>
+            <label class="radio"><input type="radio" id="epc80on" name="epc80" value="on" />ON</label>
+            <label class="radio"><input type="radio" id="epc80off" name="epc80" value="off" />OFF</label>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpc80Set()"/>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>開閉状態 (0x80)</h2>
+            <div id="epcE0" class="line-1st"> </div>
+        </section>
+        <section>
+            <div>
+            <label class="radio"><input type="radio" id="epcE0open" name="epcE0" value="open" />OPEN</label>
+            <label class="radio"><input type="radio" id="epcE0close" name="epcE0" value="close" />CLOSE</label>
+            <label class="radio"><input type="radio" id="epcE0stop" name="epcE0" value="stop" />STOP</label>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcE0Set()"/>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>開度レベル (0xE1)</h2>
+            <div id="epcE1" class="line-1st"> </div>
+        </section>
+        <section>
+            <div id="epcE1">
+            <input type="range" name="epcE1" value="100" min="0" max="100" class="slider" id="sliderE1">
+            <div id="slider-valueE1"></div>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcE1Set()"/>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>ブラインド角度 (0xE2)</h2>
+            <div id="epcE2" class="line-1st"> </div>
+        </section>
+        <section>
+            <div id="epcE2">
+            <input type="range" name="epcE2" value="90" min="0" max="180" class="slider" id="sliderE2">
+            <div id="slider-valueE2"></div>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcE2Set()"/>
+        </section>
+    </div>
+</main>
+</body>
+
+<script>
+    // device name is passed by payload.device from previous node 
+    var deviceName = "{{payload.device}}";
+    console.log("deviceName", deviceName);
+    var serverURL = "";
+//     var serverURL = "http://localhost:1880/";
+    var sliderE1 = document.querySelector('input[id="sliderE1"]');
+    var sliderE2 = document.querySelector('input[id="sliderE2"]');
+
+    // slider
+    function rangeValue1() {
+        let newValue = sliderE1.value;
+        let target = document.getElementById('slider-valueE1');
+        target.innerHTML = newValue;
+    }
+    sliderE1.addEventListener("input", rangeValue1);
+
+    function rangeValue2() {
+        let newValue = sliderE2.value;
+        let target = document.getElementById('slider-valueE2');
+        target.innerHTML = newValue;
+    }
+    sliderE2.addEventListener("input", rangeValue2);
+    
+    // set "Unknown" to current status
+    document.querySelector('#epc80').innerHTML = "Unknown";
+    document.querySelector('#epcE0').innerHTML = "Unknown";
+    document.querySelector('#epcE1').innerHTML = "Unknown";
+    document.querySelector('#epcE2').innerHTML = "Unknown";
+    
+    // show slider initial value
+    rangeValue1();
+    rangeValue2();
+
+    // initialize current status
+    ButtonClickEpcUpdate();
+        
+    // "UPDATE" button
+    function ButtonClickEpcUpdate() {
+    console.log("ButtonClickEpcUpdate");
+        ButtonClickEpc80Update();
+        ButtonClickEpcE0Update();
+        ButtonClickEpcE1Update();
+        ButtonClickEpcE2Update();
+    }
+    
+    function ButtonClickEpc80Update() {
+            console.log("ButtonClickEpc80Update");
+
+            let epc80 = document.querySelector('#epc80');
+            let request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getOperatingStatus', false);
+            request.send();
+            epc80.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcE0Update() {
+            console.log("ButtonClickEpcE0Update");
+
+            var epcE0 = document.querySelector('#epcE0');
+            var request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getBlindStatus', false);
+            request.send();
+            epcE0.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcE1Update() {
+            console.log("ButtonClickEpcE1Update");
+
+            var epcE1 = document.querySelector('#epcE1');
+            var request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getOpenRate', false);
+            request.send();
+            epcE1.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcE2Update() {
+            console.log("ButtonClickEpcE1Update");
+
+            var epcE2 = document.querySelector('#epcE2');
+            var request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getBlindAngle', false);
+            request.send();
+            epcE2.innerHTML = request.responseText.toUpperCase();
+        }
+
+    // "SET" button
+    function ButtonClickEpc80Set() {
+            let epc80on = document.querySelector('#epc80on').checked;
+            let epc80off = document.querySelector('#epc80off').checked;
+            let request = new XMLHttpRequest();
+            if (epc80on === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setOperatingStatus&param=on', false);
+                request.send();
+            }
+            if (epc80off === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setOperatingStatus&param=off', false);
+                request.send();
+            }
+            ButtonClickEpc80Update();
+        }
+
+    function ButtonClickEpcE0Set() {
+            let epcE0open = document.querySelector('#epcE0open').checked;
+            let epcE0close = document.querySelector('#epcE0close').checked;
+            let epcE0stop = document.querySelector('#epcE0stop').checked;
+            let request = new XMLHttpRequest();
+            if (epcE0open === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setBlindStatus&param=open', false);
+                request.send();
+            }
+            if (epcE0close === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setBlindStatus&param=close', false);
+                request.send();
+            }
+            if (epcE0stop === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setBlindStatus&param=stop', false);
+                request.send();
+            }
+            ButtonClickEpcE0Update();
+        }
+
+    function ButtonClickEpcE1Set() {
+        let newValue = sliderE1.value;
+        let request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setOpenRate&param=' + newValue, false);
+            request.send();
+            ButtonClickEpcE1Update();
+    }
+
+    function ButtonClickEpcE2Set() {
+        let newValue = sliderE2.value;
+        let request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setBlindAngle&param=' + newValue, false);
+            request.send();
+            ButtonClickEpcE2Update();
+    }
+
+</script>
+</html>

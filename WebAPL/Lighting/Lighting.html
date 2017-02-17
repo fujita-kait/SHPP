@@ -1,0 +1,344 @@
+<!-- Lighting -->
+<!-- Hiroyuki Fujita 2017.02.15 -->
+<!-- For Node-RED -->
+<!-- device name is passed by payload.device from previous node -->
+
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"i>
+    <title>{{payload.device}}</title>
+    <style>
+    * {
+      margin: 0; padding: 0;
+    }    
+    html, body {
+        font-family: sans-serif;
+        /*width: 320px;*/
+         width: 100%; 
+    }
+    h1 {
+      font-size: 1.4rem;
+      padding: 10px 0px 0px 10px;
+    }
+    label {
+      padding: 0px 0px 0px 5px;
+    }    
+    .epc {
+        background: #ecf0f1;
+        box-shadow: 0 0 3px #aaa;
+      padding: 5px;
+    }
+    .epc h2 {
+        font-weight: normal;
+        font-size: 1.2rem;
+        padding: 5px 5px 0px 5px;
+    }
+    .radio {
+      /*padding: 5px;*/
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;  /* 左右均等分布 */
+      align-items: center;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    section {
+      display: flex;
+      justify-content: space-between;  /* 左右均等分布 */
+      align-items: center;
+    }
+    #epcB0 {                                        /* for slider */
+      display: flex;
+      justify-content: space-between;  /* 左右均等分布 */
+      align-items: center;
+    }
+    .line-1st {
+        font-weight: normal;
+        font-size: 1.2rem;
+        color: red;
+        padding: 5px 5px 0px 5px;
+    }
+    .buttonHeader {
+      height: 20px;
+      margin: 10px 20px 0 0;
+    }
+    .buttonSet {
+      height: 20px;
+    }    
+    #slider-value {
+      text-align: center;
+      font-size: 1.5em;
+      width: 40px; 
+      height: 10px;
+      line-height: 10px;
+      margin: 10px;
+    }
+    input[type="range"] {
+        display: block;
+        -webkit-appearance: none;
+        background-color: #bdc3c7;
+        width: 180px;
+        height: 5px;
+        outline: 0;
+        margin: 10px 0px 10px 0px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        background-color: #e74c3c;
+        width: 15px;
+        height: 30px;
+        border: 2px solid white;
+    }​
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>{{payload.device}}</h1>
+    <input type="button" class="buttonHeader" value="UPDATE" onclick="ButtonClickEpcUpdate()"/>
+</header>
+
+<main>
+    <div class="epc">
+        <section>
+            <h2>動作状態 (0x80)</h2>
+            <div id="epc80" class="line-1st"> </div>
+        </section>
+        <section>
+            <div>
+            <label class="radio"><input type="radio" id="epc80on" name="epc80" value="on" />ON</label>
+            <label class="radio"><input type="radio" id="epc80off" name="epc80" value="off" />OFF</label>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpc80Set()"/>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>明るさ (0xB0)</h2>
+            <div id="epcB0" class="line-1st"> </div>
+        </section>
+        <section>
+            <div id="epcB0">
+            <input type="range" name="example" value="100" min="0" max="100" class="slider">
+            <div id="slider-value"></div>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcB0Set()"/>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>点灯モード (0xB6)</h2>
+            <div id="epcB6" class="line-1st"> </div>
+        </section>
+        <section>
+            <div>
+            <label class="radio"><input type="radio" id="epcB6auto" name="epcB6" value="auto" />自動</label>
+            <label class="radio"><input type="radio" id="epcB6normal" name="epcB6" value="normal" />通常灯</label>
+            <label class="radio"><input type="radio" id="epcB6night" name="epcB6" value="night" />常夜灯</label>
+            <label class="radio"><input type="radio" id="epcB6color" name="epcB6" value="color" />カラー灯</label>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcB6Set()"/>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>カラー設定 (0xC0)</h2>
+            <div id="epcC0" class="line-1st"> </div>
+        </section>
+        <section>
+            <div>
+            <label class="radio"><input type="radio" id="epcC0red" name="epcC0" value="red" />red</label>
+            <label class="radio"><input type="radio" id="epcC0lime" name="epcC0" value="lime" />lime</label>
+            <label class="radio"><input type="radio" id="epcC0green" name="epcC0" value="green" />green</label>
+            <label class="radio"><input type="radio" id="epcC0blue" name="epcC0" value="blue" />blue</label>
+            <label class="radio"><input type="radio" id="epcC0white" name="epcC0" value="white" />white</label>
+            <label class="radio"><input type="radio" id="epcC0black" name="epcC0" value="black" />black</label>
+            <label class="radio"><input type="radio" id="epcC0cyan" name="epcC0" value="cyan" />cyan</label>
+            <label class="radio"><input type="radio" id="epcC0magenta" name="epcC0" value="magenta" />magenta</label>
+            <label class="radio"><input type="radio" id="epcC0yellow" name="epcC0" value="yellow" />yellow</label>
+            </div>
+            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcC0Set()"/>
+        </section>
+    </div>
+</main>
+</body>
+
+<script>
+    // device name is passed by payload.device from previous node 
+    var deviceName = "{{payload.device}}";
+    console.log("deviceName", deviceName);
+    var serverURL = "";
+//     var serverURL = "http://localhost:1880/";
+    var slider = document.querySelector('input[type="range"]');
+
+    // slider
+    function rangeValue() {
+        var newValue = slider.value;
+        var target = document.querySelector('#slider-value');
+        target.innerHTML = newValue;
+    }
+    slider.addEventListener("input", rangeValue);
+    
+    // set "Unknown" to current status
+    document.querySelector('#epc80').innerHTML = "Unknown";
+    document.querySelector('#epcB0').innerHTML = "Unknown";
+    document.querySelector('#epcB6').innerHTML = "Unknown";
+    document.querySelector('#epcC0').innerHTML = "Unknown";
+    
+    // show slider initial value    
+    rangeValue();
+
+    // initialize current status
+    ButtonClickEpcUpdate();
+        
+    // "UPDATE" button
+    function ButtonClickEpcUpdate() {
+        ButtonClickEpc80Update();
+        ButtonClickEpcB0Update();
+        ButtonClickEpcB6Update();
+        ButtonClickEpcC0Update();
+    }
+    
+    function ButtonClickEpc80Update() {
+            let epc80 = document.querySelector('#epc80');
+            let request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getOperatingStatus', false);
+            request.send();
+            epc80.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcB0Update() {
+            var epcB0 = document.querySelector('#epcB0');
+            var request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getBrightness', false);
+            request.send();
+            epcB0.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcB6Update() {
+            var epcB6 = document.querySelector('#epcB6');
+            var request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getLightingMode', false);
+            request.send();
+            epcB6.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcC0Update() {
+            var epcC0 = document.querySelector('#epcC0');
+            var request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=getColorSetting', false);
+            request.send();
+            epcC0.innerHTML = request.responseText.toUpperCase();
+        }
+
+    // "SET" button
+    function ButtonClickEpc80Set() {
+            let epc80on = document.querySelector('#epc80on').checked;
+            let epc80off = document.querySelector('#epc80off').checked;
+            let request = new XMLHttpRequest();
+            if (epc80on === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setOperatingStatus&param=on', false);
+                request.send();
+            }
+            if (epc80off === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setOperatingStatus&param=off', false);
+                request.send();
+            }
+            ButtonClickEpc80Update();
+        }
+
+    function ButtonClickEpcB0Set() {
+        var newValue = slider.value;
+        let request = new XMLHttpRequest();
+            request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setBrightness&param=' + newValue, false);
+            request.send();
+            ButtonClickEpcB0Update();
+    }
+
+    function ButtonClickEpcB6Set() {
+            let epcB6auto = document.querySelector('#epcB6auto').checked;
+            let epcB6normal = document.querySelector('#epcB6normal').checked;
+            let epcB6night = document.querySelector('#epcB6night').checked;
+            let epcB6color = document.querySelector('#epcB6color').checked;
+            let request = new XMLHttpRequest();
+            if (epcB6auto === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setLightingMode&param=auto', false);
+                request.send();
+            }
+            if (epcB6normal === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setLightingMode&param=normal', false);
+                request.send();
+            }
+            if (epcB6night === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setLightingMode&param=night', false);
+                request.send();
+            }
+            if (epcB6color === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setLightingMode&param=color', false);
+                request.send();
+            }
+            ButtonClickEpcB6Update();
+        }
+
+    function ButtonClickEpcC0Set() {
+            let epcC0red = document.querySelector('#epcC0red').checked;
+            let epcC0lime = document.querySelector('#epcC0lime').checked;
+            let epcC0green = document.querySelector('#epcC0green').checked;
+            let epcC0blue = document.querySelector('#epcC0blue').checked;
+            let epcC0white = document.querySelector('#epcC0white').checked;
+            let epcC0black = document.querySelector('#epcC0black').checked;
+            let epcC0cyan = document.querySelector('#epcC0cyan').checked;
+            let epcC0magenta = document.querySelector('#epcC0magenta').checked;
+            let epcC0yellow = document.querySelector('#epcC0yellow').checked;
+            let request = new XMLHttpRequest();
+            if (epcC0red === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=red', false);
+                request.send();
+            }
+            if (epcC0lime === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=lime', false);
+                request.send();
+            }
+            if (epcC0green === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=green', false);
+                request.send();
+            }
+            if (epcC0blue === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=blue', false);
+                request.send();
+            }
+            if (epcC0white === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=white', false);
+                request.send();
+            }
+            if (epcC0black === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=black', false);
+                request.send();
+            }
+            if (epcC0cyan === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=cyan', false);
+                request.send();
+            }
+            if (epcC0magenta === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=magenta', false);
+                request.send();
+            }
+            if (epcC0yellow === true) {
+                request.open('GET', serverURL + 'EL/deviceControl?device=' + deviceName + '&func=setColorSetting&param=yellow', false);
+                request.send();
+            }
+            ButtonClickEpcB6Set();
+            ButtonClickEpcC0Update();
+        }
+</script>
+</html>

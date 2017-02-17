@@ -1,0 +1,230 @@
+<!-- AirConditioner_1 -->
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Flexbox Test</title>
+    <style>
+    * {
+      margin: 0; padding: 0;
+    }    
+    html, body {
+        font-family: sans-serif;
+        width: 100%;
+    }
+    h1 {
+      font-size: 1.5rem;
+      padding: 10px 0px 0px 10px;
+    }    
+    .epc {
+        background: #ecf0f1;
+        box-shadow: 0 0 3px #aaa;
+      padding: 5px;
+    }
+    .epc h2 {
+        font-weight: normal;
+        font-size: 1.2rem;
+        padding: 5px 5px 0px 5px;
+    }
+    p {
+      padding: 10px 10px 20px 10px;
+    }
+    .radio {
+      padding: 5px;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    section {
+      display: flex;
+    }
+    .line-1st {
+        font-weight: normal;
+        font-size: 1.2rem;
+        color: red;
+        padding: 5px 5px 0px 5px;
+    }
+    .buttonUpdate {
+      height: 20px;
+      margin-top: 10px;
+    }    
+    .buttonSet {
+      height: 20px;
+    }    
+    #slider-value {
+      text-align: center;
+      font-size: 1.5em;
+      width: 40px; 
+      height: 10px;
+      line-height: 10px;
+      margin: 10px;
+    }
+    input[type="range"] {
+        display: block;
+        -webkit-appearance: none;
+        background-color: #bdc3c7;
+        width: 200px;
+        height: 5px;
+        outline: 0;
+        margin: 10px 0px 10px 0px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        background-color: #e74c3c;
+        width: 15px;
+        height: 30px;
+        border: 2px solid white;
+    }​
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>Air Conditioner_1</h1>
+</header>
+
+<main>
+    <div class="epc">
+        <section>
+            <h2>動作状態 (0x80)</h2>
+            <div id="epc80" class="line-1st"> </div>
+            <input type="button" class="buttonUpdate" value="UPDATE" onclick="ButtonClickEpc80Update()"/>
+        </section>
+<!--         <form action="http://localhost:1880/EL/deviceControl?device=AirConditioner_1&func=setOperatingStatus"> -->
+            <label class="radio"><input type="radio" name="epc80" value="on" /> ON</label>
+            <label class="radio"><input type="radio" name="epc80" value="off" /> OFF</label>
+<!--             <input type="submit" class="buttonSet" value="SET" /> -->
+<!--             <input type="submit" class="buttonSet" value="SET" onclick="ButtonClickEpc80Set();"/> -->
+<!--          </form> -->
+    </div>
+    
+    <div class="epc">
+        <section>
+            <h2>風量設定 (0xA0)</h2>
+            <div id="epcA0" class="line-1st"> </div>
+            <input type="button" class="buttonUpdate" value="UPDATE" onclick="ButtonClickEpcA0Update()"/>
+<!--             <button class="buttonUpdate"> UPDATE </button> -->
+        </section>
+        <label class="radio"><input type="radio" name="epcA0" value="auto" /> 自動</label>
+        <label class="radio"><input type="radio" name="epcA0" value="L1" /> L1</label>
+        <label class="radio"><input type="radio" name="epcA0" value="L2" /> L2</label>
+            <button class="buttonSet"> SET </button>
+    </div>
+    
+    <div class="epc">
+        <section>
+            <h2>運転モード (0xB0)</h2>
+            <div id="epcB0" class="line-1st"> </div>
+            <input type="button" class="buttonUpdate" value="UPDATE" onclick="ButtonClickEpcB0Update()"/>
+<!--             <button class="buttonUpdate"> UPDATE </button> -->
+        </section>
+        <label class="radio"><input type="radio" name="epcB0" value="auto" /> 自動</label>
+        <label class="radio"><input type="radio" name="epcB0" value="cooling" /> 冷房</label>
+        <label class="radio"><input type="radio" name="epcB0" value="heating" /> 暖房</label>
+        <label class="radio"><input type="radio" name="epcB0" value="dehumidification" /> 除湿</label>
+        <label class="radio"><input type="radio" name="epcB0" value="ventilation" /> 送風</label>
+            <button class="buttonSet"> SET </button>
+    </div>
+    
+    <div class="epc">
+        <section>
+            <h2>温度設定値 (0xB3)</h2>
+            <div id="epcB3" class="line-1st"> </div> 
+            <input type="button" class="buttonUpdate" value="UPDATE" onclick="ButtonClickEpcB3Update()"/>
+<!--             <button class="buttonUpdate"> UPDATE </button> -->
+        </section>
+        <section>
+            <input type="range" name="example" value="10" min="-20" max="50" class="slider">
+            <div id="slider-value"></div>
+            <button class="buttonSet"> SET </button>
+        </section>
+    </div>
+
+    <div class="epc">
+        <section>
+            <h2>室内温度計測値 (0xBB)</h2>
+            <div id="epcBB" class="line-1st"> </div>
+            <input type="button" class="buttonUpdate" value="UPDATE" onclick="ButtonClickEpcBBUpdate()"/>
+<!--             <button class="buttonUpdate"> UPDATE </button> -->
+        </section>
+    </div>
+</main>
+</body>
+
+<script>
+    var slider = document.querySelector('input[type="range"]');
+    var button80Update = document.querySelector('input[type="range"]');
+    
+    rangeValue();
+
+    function rangeValue() {
+        var newValue = slider.value;
+        var target = document.querySelector('#slider-value');
+        target.innerHTML = newValue;
+    }
+    slider.addEventListener("input", rangeValue);
+    
+    var target = document.querySelector('#epc80');
+    target.innerHTML = "unknown";
+    var target1 = document.querySelector('#epcA0');
+    target1.innerHTML = "unknown";
+    var target2 = document.querySelector('#epcB0');
+    target2.innerHTML = "unknown";
+    var target3 = document.querySelector('#epcB3');
+    target3.innerHTML = "unknown";
+    var target4 = document.querySelector('#epcBB');
+    target4.innerHTML = "unknown";
+    
+    function ButtonClickEpc80Update() {
+            let epc80 = document.querySelector('#epc80');
+            let request = new XMLHttpRequest();
+            request.open('GET', 'http://localhost:1880/EL/deviceControl?device=AirConditioner_1&func=getOperatingStatus', false);
+            request.send();
+            epc80.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcA0Update() {
+            let epcA0 = document.querySelector('#epcA0');
+            let request = new XMLHttpRequest();
+            request.open('GET', 'http://localhost:1880/EL/deviceControl?device=AirConditioner_1&func=getAirFlowLevel', false);
+            request.send();
+            epcA0.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcB0Update() {
+            var epcB0 = document.querySelector('#epcB0');
+            var request = new XMLHttpRequest();
+            request.open('GET', 'http://localhost:1880/EL/deviceControl?device=AirConditioner_1&func=getOperatingMode', false);
+            request.send();
+            epcB0.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcB3Update() {
+            var epcB3 = document.querySelector('#epcB3');
+            var request = new XMLHttpRequest();
+            request.open('GET', 'http://localhost:1880/EL/deviceControl?device=AirConditioner_1&func=getTargetTemperature', false);
+            request.send();
+            epcB3.innerHTML = request.responseText.toUpperCase();
+        }
+    function ButtonClickEpcBBUpdate() {
+            var epcBB = document.querySelector('#epcBB');
+            var request = new XMLHttpRequest();
+            request.open('GET', 'http://localhost:1880/EL/deviceControl?device=AirConditioner_1&func=getRoomTemperature', false);
+            request.send();
+            epcBB.innerHTML = request.responseText.toUpperCase();
+        }
+
+
+
+    function ButtonClickEpc80Set() {
+        console.log("epc80");
+//         var checkEpc80On = document.getElementById("epc80On");
+//         var checkEpc80Off = document.getElementById("epc80Off");
+//         console.dir(checkEpc80On);
+//         console.log(checkEpc80On.checked);
+//         console.log(checkEpc80Off.checked);
+            target = document.querySelector('#epc80');
+            target.innerHTML = "OFF";
+        }
+    
+</script>
+</html>
