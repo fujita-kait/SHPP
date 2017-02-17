@@ -125,22 +125,10 @@
     
     <div class="epc">
         <section>
-            <h2>風量設定 (0xA0)</h2>
-            <div id="epcA0" class="line-1st"> </div>
+            <h2>ドア開閉状態 (0xB0)</h2>
+            <div id="epcB0" class="line-1st"> </div>
         </section>
         <section>
-            <div>
-            <label class="radio"><input type="radio" id="epcA0auto" name="epcA0" value="auto" />自動</label>
-            <label class="radio"><input type="radio" id="epcA0L1" name="epcA0" value="L1" />L1</label>
-            <label class="radio"><input type="radio" id="epcA0L2" name="epcA0" value="L2" />L2</label>
-            <label class="radio"><input type="radio" id="epcA0L3" name="epcA0" value="L3" />L3</label>
-            <label class="radio"><input type="radio" id="epcA0L4" name="epcA0" value="L4" />L4</label>
-            <label class="radio"><input type="radio" id="epcA0L5" name="epcA0" value="L5" />L5</label>
-            <label class="radio"><input type="radio" id="epcA0L6" name="epcA0" value="L6" />L6</label>
-            <label class="radio"><input type="radio" id="epcA0L7" name="epcA0" value="L7" />L7</label>
-            <label class="radio"><input type="radio" id="epcA0L8" name="epcA0" value="L8" />L8</label>
-            </div>
-            <input type="button" class="buttonSet" value="SET" onclick="ButtonClickEpcA0Set()"/>
         </section>
     </div>
 
@@ -154,7 +142,7 @@
     
     // set "Unknown" to current status
     document.querySelector('#epc80').innerHTML = "Unknown";
-    document.querySelector('#epcA0').innerHTML = "Unknown";
+    document.querySelector('#epcB0').innerHTML = "Unknown";
     
     // initialize current status
     ButtonClickEpcUpdate();
@@ -162,7 +150,7 @@
     // "UPDATE" button
     function ButtonClickEpcUpdate() {
         ButtonClickEpc80Update();
-        ButtonClickEpcA0Update();
+        ButtonClickEpcB0Update();
     }
     
     function ButtonClickEpc80Update() {
@@ -172,12 +160,12 @@
             request.send();
             epc80.innerHTML = request.responseText.toUpperCase();
         }
-    function ButtonClickEpcA0Update() {
-            let epcA0 = document.querySelector('#epcA0');
+    function ButtonClickEpcB0Update() {
+            let epcB0 = document.querySelector('#epcB0');
             let request = new XMLHttpRequest();
-            request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=getAirFlowLevel', false);
+            request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=getDoorStatus', false);
             request.send();
-            epcA0.innerHTML = request.responseText.toUpperCase();
+            epcB0.innerHTML = request.responseText.toUpperCase();
         }
 
     // "SET" button
@@ -196,55 +184,6 @@
             ButtonClickEpc80Update();
         }
 
-    function ButtonClickEpcA0Set() {
-            let epcA0auto = document.querySelector('#epcA0auto').checked;
-            let epcA0L1 = document.querySelector('#epcA0L1').checked;
-            let epcA0L2 = document.querySelector('#epcA0L2').checked;
-            let epcA0L3 = document.querySelector('#epcA0L3').checked;
-            let epcA0L4 = document.querySelector('#epcA0L4').checked;
-            let epcA0L5 = document.querySelector('#epcA0L5').checked;
-            let epcA0L6 = document.querySelector('#epcA0L6').checked;
-            let epcA0L7 = document.querySelector('#epcA0L7').checked;
-            let epcA0L8 = document.querySelector('#epcA0L8').checked;
-            let request = new XMLHttpRequest();
-            if (epcA0auto === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=auto', false);
-                request.send();
-            }
-            if (epcA0L1 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L1', false);
-                request.send();
-            }
-            if (epcA0L2 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L2', false);
-                request.send();
-            }
-            if (epcA0L3 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L3', false);
-                request.send();
-            }
-            if (epcA0L4 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L4', false);
-                request.send();
-            }
-            if (epcA0L5 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L5', false);
-                request.send();
-            }
-            if (epcA0L6 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L6', false);
-                request.send();
-            }
-            if (epcA0L7 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L7', false);
-                request.send();
-            }
-            if (epcA0L8 === true) {
-                request.open('GET', 'EL/deviceControl?device=' + deviceName + '&func=setAirFlowLevel&param=L8', false);
-                request.send();
-            }
-            ButtonClickEpcA0Update();
-        }
     
 </script>
 </html>
