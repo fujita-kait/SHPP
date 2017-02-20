@@ -1,16 +1,18 @@
 # Smart House Prototyping Platform (SHPP)
 
+Rev. 0.1: 2017.02.20
+
 ## 1. Overview
-SHPPはWeb APIでECHONET Lite(EL)機器を制御できるようにしたECHONET Lite controller。実装はNode-REDを利用している。SHPPはUIを持たず、Web APIのみである。Reference実装としてsampleのHTMLを提供している。
+SHPPはWeb APIでECHONET Lite(EL)機器を制御できるECHONET Liteのコントローラである。実装はNode-REDを利用している。SHPPはUIを持たず、Web APIのみである。Reference実装としてsampleのWeb APLを提供している。
 
 ## 2. Web API
 
 ### 2.1 Device List 関連
 
 - Directory: /EL/deviceList
-- Abstract:<br>
-　SHPPは起動時と updateDeviceList コマンド受信時にLAN内のEL機器探索を行う。SHPPがEL deviceを発見すると、device nameを作成し、IP addressとEOJ(3byte)の組み合わせを"deviceList"に登録する。device nameは機器種名の後に "\_" と1から始まる数字を付加して作成する（例えば一般照明の場合は "Lighting_1"）。機器制御にdevice nameを利用することで、ユーザーはEL deviceのIP addressやEOJを意識する必要がなくなる。機器種名は "deviceNameTable" で定義されている。<br>
-　"getDeviceNames"を実行すると、SHPPが認識している device name のlistを取得できる。サンプルを以下に示す。<br>
+- Description:  
+　SHPPは起動時と updateDeviceList コマンド受信時にLAN内のEL機器探索を行う。SHPPがEL deviceを発見するとdevice nameを作成し、device nameをkeyとしてIP addressとEOJ(3byte)を"deviceList"に登録する。device nameは機器種名（例：一般照明は "Lighting"）の後に "\_" と1から始まる数字を付加して作成する（例： "Lighting_1"）。device nameを利用することで、ユーザーはEL機器のIP addressやEOJを意識することなく機器制御が行える。機器種名は "deviceNameTable.json" で定義されている。  
+　"getDeviceNames"を実行すると、SHPPが認識している device name のlistを取得できる。サンプルを以下に示す。  
 
 ```
 Sample response of "getDeviceNames"
@@ -35,22 +37,22 @@ Sample response of "getDeviceNames"
 
 - Sample:
 
-	> /EL/deviceList?func=getDeviceNames<br>
-	> /EL/deviceList?func=clearDeviceList<br>
+	> /EL/deviceList?func=getDeviceNames  
+	> /EL/deviceList?func=clearDeviceList  
 	> /EL/deviceList?func=updateDeviceList
 
 
 ### 2.2 機器制御 関連
 
 - Directory: /EL/deviceControl
-- Abstract:<br>
+- Description:  
 　機器制御命令には、機器の状態を取得する "get" 命令と、機器の動作状態を変更する "set" 命令がある。"get"命令を実行すると値を取得できる。"set"命令はパラメータを付加して送る。機器が"set"命令を受信すると"ACK"が返ってくる。以下の説明でEOJやEPCはECHONET Liteで規定された値である。機器制御の詳細を確認するためにはこれらの値を利用してECHONET Liteの仕様書を参照すること。
 　
 - format
 	> /EL/deviceControl?device=\<device\_name>&func=\<function\_name>&param=\<data>
 
 - Samples:
-	> /EL/deviceControl?device=AirConditioner\_1&func=getOperatingStatus<br>
+	> /EL/deviceControl?device=AirConditioner\_1&func=getOperatingStatus  
 	> /EL/deviceControl?device=AirConditioner\_1&func=setOperatingStatus&param=on
 
 #### 2.2.1 温度センサ(DeviceName=TemperatureSensor, EOJ=0x0011)
@@ -107,8 +109,14 @@ Sample response of "getDeviceNames"
 | 動作状態(0x80) | getOperatingStatus, setOperatingStatus    |  on, off |
 | 照度レベル設定(0xB0) | getBrightness, setBrightness    | NumericData(0〜100)% |
 | 点灯モード設定(0xB6) | getLightingMode, setLightingMode  | auto, normal, night, color |
-| カラー灯モード時RGB設定(0xC0) | getColorSetting | RGB value(HEX data 3byte) ex.:FF0000(red)) |
-| カラー灯モード時RGB設定(0xC0) | setColorSetting | red, lime, green, blue, white, black, cyan, magenta, yellow, or RGB value(HEX data 3byte) |
+| カラー灯モード時RGB設定(0xC0) | getColorSetting | RGB value(HEX data 3byte) ex.:ff0000(red) |
+| カラー灯モード時RGB設定(0xC0) | setColorSetting | Color Name(defined as CSS color):   red, lime, green, blue, white, black, cyan, magenta, yellow,   or RGB value(HEX data 3byte) ex.:ff0000(red) |
+
+- Samples:
+
+	> /EL/deviceControl?device=Lighting\_1&func= setColorSetting&param=red   
+	> /EL/deviceControl?device=Lighting\_1&func= setColorSetting&param=ff0000   
+	
 
 #### 2.2.6 単機能照明(DeviceName= SimpleLighting, EOJ=0x0291)
 
@@ -159,7 +167,7 @@ Sample response of "getDeviceNames"
 ```
 
 #### Color Name Table
-以下の "colorNameTable.json"を読み込み、objectに変換後、Global変数(deviceNameTable)として実装する。色の名前と値の表記方法はCSSを参考にした。
+以下の "colorNameTable.json"を読み込み、objectに変換後、Global変数(deviceNameTable)として実装する。色の名前と値の表記方法はCSSでの定義を参考にした。
 
 ```JSON
 {
@@ -183,7 +191,7 @@ Sample response of "getDeviceNames"
 
 | column name | data type | description | sample |
 |:------:|:------------:|:------------:|:------------:|
-| deviceName | string | device name(primary key) | AirConditioner_1 |
+| deviceName(key) | string | device name(primary key) | AirConditioner_1 |
 | ip | string | ip address | 192.168.31.2 |
 | eoj | [Int, Int] | EOJ | [0x0130, 1] |
 
@@ -227,79 +235,3 @@ function getDeviceInfo(deviceName){
 ### 3.3 Get_Res受信時の処理
 
 ネットワーク上のECHONET Lite機器の情報をDevice List DBと呼び、Global変数(deviceList)として実装する
-
-
-## 4. 進捗
-2017.01.11
-
-- エアコン、照明（色指定以外）、空気清浄機の実装が完了
-- 電動ブラインドは実装中
-- 照明のsetColorSettingのdataはcolorNameTableの値（red, greenなど）またはCSSのRGB値表記（FF0000など）
-	- この実装はまだ
-- node-red起動直後にgetDeviceNamesを送ると、返事が帰らない
-
-2017.01.26
-
-- colorNameTable.jsonを読み込む
-- LightingのgetColorSettingの戻り値を CSS format #xxxxxx (RGB HEX)に変更
-- LightingのsetColorSettingのparameterにCSS format #xxxxxx (RGB HEX)を追加
-- LightingのsetColorSettingのparameterのcolor nameの扱いにcolorNameTable.jsonを利用
-
-2017.01.27
-- エアコン,空気清浄機,照明,ブラインド実装完了
-
-2017.01.30
-
-- Client側でDeviceNamesの取得を確認
-- DeviceNamesのformatを、現在の"[xxx,xxx,xxx]"からxxx,xxx,xxxに変更したい
-
-2017.01.31
-
-- getDeviceNamesのreply formatを修正。array of stringからarrayに。 
- - 修正前: ["Lighting_1","AirConditioner_1","Lighting_2"]
- - 修正後: Lighting_1,AirConditioner_1,Lighting_2
-
-2017.02.08
-
-- ClientのsampleとしてAirConditioner_04.htmlを作成
-	- MacのBrowserでは正常に動作する。
-	- DropBoxでiPhone上で動作させると、httpで外部にアクセスしていない
-	- httpのアクセスを相対パスに変更してNodeRED実装したところ、正常動作することを確認
-	- ただし、iPhone上の描画が小さくて、ピンチアウトが必要
-- 今後の課題
-	- エアコン以外のリモコン画面の作成
-	- iPhoneを想定した画面作成
-	- deviceNamesからボタンを作成し、そこからリモコン画面への遷移
-	- 機器情報をJSONで読み込み、リモコン画面をJavaScriptで動的に作成
-
-2017.02.09
-
-- ClientのsampleとしてAirConditioner_05.htmlを作成
-	- iPhoneの画面サイズに対応し、Node-REDのtemplate対応した
-- ClientのsampleとしてLighting_01.htmlを作成
-- Menu_01.html 受信したdeviceNamesをもとにボタンを作成。ボタンをクリックするとリモコン画面が表示される。作成開始。
-
-2017.02.13
-
-- Menu_02.htmlで
-	- XHR通信でdeviceNamesを受け取り、メニューのボタンをダイナミックに作成
-	- ボタンをクリックするとエアコンや照明のリモコンが表示される（staticなHTMLがLighting_1, AirConditioner_1毎に用意してある）
-- ボタンクリックでdeviceName("Lighting_1, AirConditioner_1)をNode-REDに渡し、それをもとにHTMLが送られるように修正中
-	- 修正中のHTMLはLighting.html
-	- Node-RED上で、deviceNameがJavaScriptでハンドリングできることを確認中
-
-2017.02.14
-
-- Menu_03.htmlで
-	- メニューのボタンをクリックするとダイナミックにデバイス（エアコンと照明）のリモコン画面を表示する
-	- AirCleanerのリモコン画面を作成 -> 未チェック
-	- ElectricBlindのリモコン画面を作成中
-	- SourceTreeのチュートリアルを試しているところ
-
-2017.02.14
-- ElectricBlind.html動作確認
-- AirCleaner.htmlはまだ動作確認をしていない
-
-2017.02.17
-- AirCleaner.html 動作確認済み
-- Refrigerator.html 動作確認済み
